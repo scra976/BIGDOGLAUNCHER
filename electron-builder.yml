@@ -1,0 +1,38 @@
+appId: com.bigdog.launcher
+productName: BIG DOG Launcher
+copyright: Copyright © 2026 BIG DOG
+asar: true
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+extraResources:
+  - from: catalog
+    to: catalog
+  - from: bundled-games
+    to: bundled-games
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: BIG DOG Launcher
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  unicode: true
+  artifactName: BigDogLauncher-Setup-${version}.exe
+  include: build/installer.nsh
+publish:
+  provider: github
+  owner: scra976
+  repo: BIGDOGLAUNCHER
