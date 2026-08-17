@@ -1,8 +1,9 @@
-import { app, BrowserWindow, ipcMain, net, protocol, shell } from "electron";
+import { app, BrowserWindow, Notification, dialog, ipcMain, net, protocol, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type {
+  AppRole,
   AppSnapshot,
   Catalog,
   DownloadJob,
@@ -23,11 +24,14 @@ import {
 } from "./catalog";
 import {
   createRelease,
+  downloadSpec,
+  findSetupAsset,
   latestRelease,
   resolveRemoteVersion,
   uploadReleaseAsset,
 } from "./github";
 import {
+  downloadToFile,
   findLaunchFile,
   inferSideloaded,
   installGame,
@@ -36,6 +40,15 @@ import {
   playGame,
   uninstallGame,
 } from "./library";
+import {
+  copyArt,
+  gitPushCatalog,
+  publishGameZip,
+  publishLauncherSetup,
+  readWorkspaceCatalog,
+  upsertGame,
+  writeWorkspaceCatalog,
+} from "./studio-ops";
 import {
   decryptSecret,
   encryptSecret,
@@ -52,6 +65,48 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
+function isStudioMode(): boolean {
+  return (
+    process.argv.includes("--studio") ||
+    process.env.BIGDOG_ROLE === "studio" ||
+    app.getName().toLowerCase().includes("studio")
+  );
+}
+
+function notify(title: string, body: string): void {
+  sendToast("info", `${title} — ${body}`);
+  try {
+    if (!Notification.isSupported()) return;
+    const n = new Notification({ title, body, icon: path.join(projectRoot(), "build", "icon.png") });
+    n.on("click", () => {
+      if (!mainWindow) return;
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    });
+    n.show();
+  } catch {
+    /* notifications are best-effort */
+  }
+}
+
+function announceUpdates(): void {
+  if (role() === "studio") return;
+  persist.lastNotifiedGames = persist.lastNotifiedGames || {};
+  if (launcherUpdate && persist.lastNotifiedLauncher !== launcherUpdate.version) {
+    persist.lastNotifiedLauncher = launcherUpdate.version;
+    notify("BIG DOG update", `Version ${launcherUpdate.version} is ready. Open the launcher to install it.`);
+  }
+  for (const id of pendingGameIds()) {
+    const game = findGame(id);
+    const ver = remoteVersions[id]?.version || game?.version || "";
+    if (!game || persist.lastNotifiedGames[id] === ver) continue;
+    persist.lastNotifiedGames[id] = ver;
+    notify("Game update", `${game.title} ${ver} is ready. Open BIG DOG to update.`);
+  }
+  persistNow();
+}
+
 let mainWindow: BrowserWindow | null = null;
 let persist = loadState();
 let catalog: Catalog = loadBundledCatalog();
@@ -60,6 +115,7 @@ let catalogFetchedAt: string | undefined;
 let catalogError: string | undefined;
 let remoteVersions: Record<string, RemoteVersion> = {};
 let launcherUpdate: LauncherUpdate | undefined;
+let bootstrapped = false;
 const jobs = new Map<string, DownloadJob>();
 const abortors = new Map<string, AbortController>();
 let queue: { gameId: string; update: boolean }[] = [];
@@ -73,19 +129,37 @@ function sendToast(kind: "info" | "ok" | "err", text: string): void {
   mainWindow?.webContents.send("toast", { kind, text });
 }
 
+function role(): AppRole {
+  return isStudioMode() ? "studio" : "player";
+}
+
 function publicSettings(): PublicSettings {
   return {
     catalogUrl: persist.settings.catalogUrl,
     libraryPath: persist.settings.libraryPath,
     githubTokenSet: Boolean(token()),
     checkUpdates: persist.settings.checkUpdates,
+    workspacePath: persist.settings.workspacePath,
   };
+}
+
+function pendingGameIds(): string[] {
+  return catalog.games
+    .filter((g) => {
+      const installed = persist.installed[g.id];
+      if (!installed || installed.source === "local" || g.bundled) return false;
+      const remote = remoteVersions[g.id]?.version || g.version;
+      return isNewer(remote, installed.version);
+    })
+    .map((g) => g.id);
 }
 
 function snapshot(): AppSnapshot {
   const merged = mergeSideloaded(catalog, persist.sideloaded);
   const withMedia = resolveCatalogMedia(merged, persist.settings.catalogUrl, catalogSource);
   return {
+    role: role(),
+    bootstrapped,
     settings: publicSettings(),
     catalog: withMedia,
     catalogSource,
@@ -95,6 +169,7 @@ function snapshot(): AppSnapshot {
     lastPlayed: persist.lastPlayed,
     downloads: [...jobs.values()],
     remoteVersions,
+    pendingGameIds: pendingGameIds(),
     launcherUpdate,
     appVersion: app.getVersion(),
     sideloaded: persist.sideloaded,
@@ -126,6 +201,9 @@ function upsertJob(partial: Partial<DownloadJob> & { gameId: string; title: stri
     received: partial.received ?? current?.received ?? 0,
     total: partial.total ?? current?.total ?? 0,
     message: partial.message ?? current?.message,
+    startedAt: partial.startedAt ?? current?.startedAt,
+    bytesPerSec: partial.bytesPerSec ?? current?.bytesPerSec,
+    etaSeconds: partial.etaSeconds ?? current?.etaSeconds,
   };
   jobs.set(partial.gameId, job);
   broadcast();
@@ -134,6 +212,27 @@ function upsertJob(partial: Partial<DownloadJob> & { gameId: string; title: stri
 
 async function refreshCatalog(): Promise<void> {
   catalogError = undefined;
+  if (isStudioMode()) {
+    try {
+      catalog = readWorkspaceCatalog(persist.settings.workspacePath);
+      catalogSource = "bundled";
+      catalogFetchedAt = new Date().toISOString();
+      broadcast();
+      await refreshRemoteVersions();
+      bootstrapped = true;
+      broadcast();
+      return;
+    } catch (err) {
+      catalogError = err instanceof Error ? err.message : String(err);
+      catalog = loadBundledCatalog();
+      catalogSource = "bundled";
+      catalogFetchedAt = new Date().toISOString();
+      await refreshRemoteVersions();
+      bootstrapped = true;
+      broadcast();
+      return;
+    }
+  }
   const url = persist.settings.catalogUrl.trim();
   try {
     const remote = await fetchRemoteCatalog(url, token());
@@ -154,9 +253,10 @@ async function refreshCatalog(): Promise<void> {
   }
   broadcast();
   await refreshRemoteVersions();
-  if (persist.settings.checkUpdates) {
-    await checkLauncherUpdate().catch(() => undefined);
-  }
+  await checkLauncherUpdate().catch(() => undefined);
+  bootstrapped = true;
+  broadcast();
+  announceUpdates();
 }
 
 async function refreshRemoteVersions(): Promise<void> {
@@ -187,10 +287,14 @@ async function checkLauncherUpdate(): Promise<LauncherUpdate | null> {
   try {
     const release = await latestRelease(owner, repo, token());
     if (isNewer(release.tag_name, app.getVersion())) {
+      const setup = findSetupAsset(release);
+      const spec = setup ? downloadSpec(setup, token() || undefined) : undefined;
       launcherUpdate = {
         version: release.tag_name,
         url: release.html_url || `https://github.com/${owner}/${repo}/releases/latest`,
         notes: release.body,
+        setupUrl: spec?.url || setup?.browser_download_url,
+        setupName: setup?.name,
       };
       broadcast();
       return launcherUpdate;
@@ -230,7 +334,15 @@ async function pumpQueue(): Promise<void> {
           token: token() || undefined,
           job,
           onProgress: (j) => {
+            if (!j.startedAt) j.startedAt = Date.now();
+            const elapsed = (Date.now() - j.startedAt) / 1000;
+            j.bytesPerSec = elapsed > 0.2 ? j.received / elapsed : 0;
+            j.etaSeconds =
+              j.bytesPerSec > 1024 && j.total > j.received ? (j.total - j.received) / j.bytesPerSec : undefined;
             jobs.set(j.gameId, { ...j });
+            const last = (j as DownloadJob & { _lastUi?: number })._lastUi || 0;
+            if (Date.now() - last < 250 && j.status === "downloading") return;
+            (j as DownloadJob & { _lastUi?: number })._lastUi = Date.now();
             broadcast();
           },
           signal: controller.signal,
@@ -286,7 +398,7 @@ function createWindow(): void {
     minHeight: 680,
     backgroundColor: "#07070c",
     frame: false,
-    title: "BIG DOG",
+    title: isStudioMode() ? "BIG DOG Studio" : "BIG DOG",
     show: false,
     icon: path.join(projectRoot(), "build", "icon.png"),
     webPreferences: {
@@ -343,6 +455,12 @@ function registerIpc(): void {
     const game = findGame(id);
     const installed = persist.installed[id];
     if (!game || !installed) return fail("Install the game first.");
+    if (role() === "player") {
+      const remote = remoteVersions[id]?.version || game.version;
+      if (installed.source !== "local" && !game.bundled && isNewer(remote, installed.version)) {
+        return fail("An update is required before you can play.");
+      }
+    }
     try {
       await playGame(game, installed, mainWindow);
       persist.lastPlayed[id] = new Date().toISOString();
@@ -399,6 +517,9 @@ function registerIpc(): void {
     if (typeof patch.libraryPath === "string" && patch.libraryPath.trim()) {
       persist.settings.libraryPath = patch.libraryPath.trim();
       ensureDir(persist.settings.libraryPath);
+    }
+    if (typeof patch.workspacePath === "string" && patch.workspacePath.trim()) {
+      persist.settings.workspacePath = patch.workspacePath.trim();
     }
     if (typeof patch.checkUpdates === "boolean") persist.settings.checkUpdates = patch.checkUpdates;
     if (patch.clearToken) {
@@ -486,6 +607,176 @@ function registerIpc(): void {
     await shell.openExternal(url);
     return ok();
   });
+  ipcMain.handle("settings:pickFolder", async (_e, title?: string) => {
+    const folder = await pickDirectory(mainWindow, title || "Select folder");
+    if (!folder) return fail("Cancelled.");
+    return ok(folder);
+  });
+  ipcMain.handle("settings:pickImage", async () => {
+    const result = await dialog.showOpenDialog(mainWindow || undefined, {
+      title: "Choose art",
+      properties: ["openFile"],
+      filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg", "webp"] }],
+    });
+    if (result.canceled || !result.filePaths[0]) return fail("Cancelled.");
+    return ok(result.filePaths[0]);
+  });
+  ipcMain.handle("game:updateAll", () => {
+    const ids = pendingGameIds();
+    if (!ids.length) return fail("Nothing to update.");
+    for (const id of ids) enqueue(id, true);
+    return ok();
+  });
+  ipcMain.handle("launcher:installUpdate", async () => {
+    if (!launcherUpdate?.setupUrl) {
+      if (launcherUpdate?.url) {
+        await shell.openExternal(launcherUpdate.url);
+        return ok();
+      }
+      return fail("No installer on the latest GitHub release.");
+    }
+    const dest = path.join(app.getPath("temp"), launcherUpdate.setupName || "BigDogLauncher-Setup.exe");
+    const headers: Record<string, string> = { "User-Agent": "BIG-DOG-Launcher" };
+    const t = token();
+    if (t && launcherUpdate.setupUrl.includes("api.github.com")) {
+      headers.Authorization = `Bearer ${t}`;
+      headers.Accept = "application/octet-stream";
+    }
+    try {
+      await downloadToFile(launcherUpdate.setupUrl, dest, headers, () => undefined, new AbortController().signal);
+      await shell.openPath(dest);
+      setTimeout(() => app.quit(), 800);
+      return ok();
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:publishUpdate", async (_e, opts: { id: string; version: string; folder?: string; notes?: string }) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const t = token();
+    if (!t) return fail("Add a GitHub token in Studio settings.");
+    const game = findGame(opts.id);
+    if (!game) return fail("Unknown game.");
+    const folder = opts.folder || game.devSource;
+    if (!folder || !fs.existsSync(folder)) return fail("Pick the game build folder first.");
+    try {
+      const published = await publishGameZip({
+        game,
+        folder,
+        version: opts.version,
+        notes: opts.notes || "",
+        token: t,
+      });
+      const ws = persist.settings.workspacePath;
+      if (fs.existsSync(path.join(ws, "catalog", "catalog.json"))) {
+        const local = readWorkspaceCatalog(ws);
+        const next = local.games.map((g) => (g.id === game.id ? { ...g, version: opts.version.replace(/^v/i, ""), devSource: folder } : g));
+        writeWorkspaceCatalog(ws, { ...local, games: next });
+        catalog = { ...catalog, games: catalog.games.map((g) => (g.id === game.id ? { ...g, version: opts.version.replace(/^v/i, ""), devSource: folder } : g)) };
+      }
+      sendToast("ok", `Published ${game.title} ${published.tag}`);
+      await refreshRemoteVersions();
+      return ok(published);
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:addGame", async (_e, game: GameEntry) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const ws = persist.settings.workspacePath;
+    try {
+      const local = readWorkspaceCatalog(ws);
+      if (local.games.some((g) => g.id === game.id)) return fail("That game id already exists.");
+      if (!game.github) {
+        game.github = {
+          owner: "scra976",
+          repo: "bigdog-games",
+          asset: `${game.id}-windows.zip`,
+          useLatestRelease: true,
+        };
+      }
+      writeWorkspaceCatalog(ws, upsertGame(local, game));
+      catalog = upsertGame(catalog, game);
+      broadcast();
+      sendToast("ok", `Added ${game.title} to the catalog.`);
+      return ok();
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:saveGame", async (_e, game: GameEntry) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const ws = persist.settings.workspacePath;
+    try {
+      const local = readWorkspaceCatalog(ws);
+      writeWorkspaceCatalog(ws, upsertGame(local, game));
+      catalog = upsertGame(catalog, game);
+      broadcast();
+      return ok();
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:setArt", async (_e, id: string, kind: "cover" | "hero", filePath: string) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const ws = persist.settings.workspacePath;
+    try {
+      const rel = copyArt(ws, id, kind, filePath);
+      const local = readWorkspaceCatalog(ws);
+      const game = local.games.find((g) => g.id === id);
+      if (!game) return fail("Unknown game.");
+      if (kind === "cover") game.cover = rel;
+      else game.hero = rel;
+      writeWorkspaceCatalog(ws, upsertGame(local, game));
+      catalog = upsertGame(catalog, game);
+      broadcast();
+      sendToast("ok", `Updated ${kind} art.`);
+      return ok();
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:pushCatalog", async (_e, message?: string) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const t = token();
+    if (!t) return fail("Add a GitHub token in Studio settings.");
+    try {
+      gitPushCatalog(persist.settings.workspacePath, t, message || "Update BIG DOG catalog");
+      sendToast("ok", "Catalog pushed. Players will see it on next launch.");
+      return ok();
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:publishLauncher", async (_e, opts: { version: string; notes?: string; setupPath?: string }) => {
+    if (role() !== "studio") return fail("Studio only.");
+    const t = token();
+    if (!t) return fail("Add a GitHub token in Studio settings.");
+    const gh = catalog.launcher?.github || { owner: "scra976", repo: "BIGDOGLAUNCHER" };
+    try {
+      const published = await publishLauncherSetup({
+        workspace: persist.settings.workspacePath,
+        version: opts.version,
+        notes: opts.notes || "",
+        token: t,
+        setupPath: opts.setupPath,
+        owner: gh.owner,
+        repo: gh.repo,
+      });
+      sendToast("ok", `Launcher ${published.tag} published.`);
+      return ok(published);
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  });
+  ipcMain.handle("studio:pickWorkspace", async () => {
+    const folder = await pickDirectory(mainWindow, "Select the BIGDOGLAUNCHER project folder");
+    if (!folder) return fail("Cancelled.");
+    persist.settings.workspacePath = folder;
+    persistNow();
+    broadcast();
+    return ok(folder);
+  });
   ipcMain.handle("launcher:checkUpdate", async () => ok(await checkLauncherUpdate()));
   ipcMain.handle("shell:open", async (_e, url: string) => {
     if (!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) return fail("Blocked URL.");
@@ -509,7 +800,9 @@ function serveCatalogAsset(request: Request): Promise<Response> | Response {
   try {
     const url = new URL(request.url);
     const rel = decodeURIComponent(url.pathname).replace(/^\/+/, "");
-    const root = path.resolve(catalogAssetDir());
+    const root = path.resolve(
+      isStudioMode() ? path.join(persist.settings.workspacePath, "catalog") : catalogAssetDir(),
+    );
     const filePath = path.resolve(root, rel);
     const rootPrefix = root.toLowerCase() + path.sep;
     if (filePath.toLowerCase() !== root.toLowerCase() && !filePath.toLowerCase().startsWith(rootPrefix)) {
@@ -523,6 +816,8 @@ function serveCatalogAsset(request: Request): Promise<Response> | Response {
     return new Response("not found", { status: 404 });
   }
 }
+
+app.setAppUserModelId(isStudioMode() ? "com.bigdog.studio" : "com.bigdog.launcher");
 
 app.whenReady().then(async () => {
   protocol.handle("bigdog", (request) => serveCatalogAsset(request));

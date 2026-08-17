@@ -10,6 +10,10 @@ export default defineConfig({
     electron({
       main: {
         entry: "electron/main.ts",
+        onstart(args) {
+          const extra = process.env.BIGDOG_ROLE === "studio" ? ["--studio"] : [];
+          args.startup([".", "--no-sandbox", ...extra]);
+        },
       },
       preload: {
         input: "electron/preload.ts",
@@ -27,7 +31,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 5173,
+    port: process.env.BIGDOG_ROLE === "studio" ? 5174 : 5173,
     strictPort: true,
   },
 });

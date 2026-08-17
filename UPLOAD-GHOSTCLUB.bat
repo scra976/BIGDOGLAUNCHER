@@ -2,7 +2,7 @@
 title BIG DOG — upload Ghost Club
 cd /d "%~dp0"
 echo.
-echo This packs C:\Users\Wesle\Desktop\GhostClub and uploads it.
+echo This packs C:\Users\Wesle\Desktop\Development\GhostClub and uploads it.
 echo Paste the same GitHub token you used for the launcher.
 echo (Right-click to paste. Letters will not show. That is normal.)
 echo.
@@ -12,13 +12,13 @@ if "%GITHUB_TOKEN%"=="" (
   pause
   exit /b 1
 )
-if not exist "C:\Users\Wesle\Desktop\GhostClub\Casino.exe" (
+if not exist "C:\Users\Wesle\Desktop\Development\GhostClub\Casino.exe" (
   echo.
-  echo Could not find C:\Users\Wesle\Desktop\GhostClub\Casino.exe
+  echo Could not find C:\Users\Wesle\Desktop\Development\GhostClub\Casino.exe
   echo Put the Godot export there first.
   pause
   exit /b 1
 )
-node scripts\upload-game.mjs ghostclub "C:\Users\Wesle\Desktop\GhostClub"
+node scripts\upload-game.mjs ghostclub "C:\Users\Wesle\Desktop\Development\GhostClub"
 echo.
 pause

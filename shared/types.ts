@@ -8,7 +8,8 @@ export type DownloadStatus =
   | "done"
   | "error"
   | "cancelled";
-export type PageId = "library" | "store" | "downloads" | "studio" | "settings";
+export type AppRole = "player" | "studio";
+export type PageId = "library" | "store" | "downloads" | "studio" | "settings" | "games" | "newgame" | "art" | "launcher";
 
 export interface GitHubRef {
   owner: string;
@@ -45,6 +46,7 @@ export interface GameEntry {
   launch: GameLaunch;
   preserve?: string[];
   visible?: boolean;
+  devSource?: string;
 }
 
 export interface Catalog {
@@ -79,6 +81,9 @@ export interface DownloadJob {
   received: number;
   total: number;
   message?: string;
+  startedAt?: number;
+  bytesPerSec?: number;
+  etaSeconds?: number;
 }
 
 export interface RemoteVersion {
@@ -93,15 +98,20 @@ export interface PublicSettings {
   libraryPath: string;
   githubTokenSet: boolean;
   checkUpdates: boolean;
+  workspacePath: string;
 }
 
 export interface LauncherUpdate {
   version: string;
   url: string;
   notes?: string;
+  setupUrl?: string;
+  setupName?: string;
 }
 
 export interface AppSnapshot {
+  role: AppRole;
+  bootstrapped: boolean;
   settings: PublicSettings;
   catalog: Catalog;
   catalogSource: CatalogSource;
@@ -111,6 +121,7 @@ export interface AppSnapshot {
   lastPlayed: Record<string, string>;
   downloads: DownloadJob[];
   remoteVersions: Record<string, RemoteVersion>;
+  pendingGameIds: string[];
   launcherUpdate?: LauncherUpdate;
   appVersion: string;
   sideloaded: GameEntry[];
@@ -146,13 +157,29 @@ export interface BigDogApi {
   saveSettings: (patch: {
     catalogUrl?: string;
     libraryPath?: string;
+    workspacePath?: string;
     githubToken?: string;
     checkUpdates?: boolean;
     clearToken?: boolean;
   }) => Promise<InvokeResult>;
   pickLibraryPath: () => Promise<InvokeResult<string>>;
+  pickFolder: (title?: string) => Promise<InvokeResult<string>>;
+  pickImage: () => Promise<InvokeResult<string>>;
   packGame: (id: string) => Promise<InvokeResult<PackResult>>;
   publishGame: (id: string, notes?: string) => Promise<InvokeResult<PublishResult>>;
+  publishGameUpdate: (opts: {
+    id: string;
+    version: string;
+    folder?: string;
+    notes?: string;
+  }) => Promise<InvokeResult<PublishResult>>;
+  addGame: (game: GameEntry) => Promise<InvokeResult>;
+  saveGame: (game: GameEntry) => Promise<InvokeResult>;
+  setGameArt: (id: string, kind: "cover" | "hero", filePath: string) => Promise<InvokeResult>;
+  pushCatalog: (message?: string) => Promise<InvokeResult>;
+  publishLauncher: (opts: { version: string; notes?: string; setupPath?: string }) => Promise<InvokeResult<PublishResult>>;
+  updateAll: () => Promise<InvokeResult>;
+  installLauncherUpdate: () => Promise<InvokeResult>;
   openReleasePage: (id: string) => Promise<InvokeResult>;
   checkLauncherUpdate: () => Promise<InvokeResult<LauncherUpdate | null>>;
   openExternal: (url: string) => Promise<InvokeResult>;

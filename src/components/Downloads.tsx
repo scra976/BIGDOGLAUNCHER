@@ -1,5 +1,5 @@
 import type { AppSnapshot } from "../../shared/types";
-import { bytes, pct } from "../lib/format";
+import { downloadLabel, pct } from "../lib/format";
 
 export function DownloadsPage(props: { snap: AppSnapshot }) {
   const jobs = [...props.snap.downloads].reverse();
@@ -23,7 +23,7 @@ export function DownloadsPage(props: { snap: AppSnapshot }) {
               <div>
                 <b>{job.title}</b>
                 <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                  {job.status} {job.message ? `· ${job.message}` : ""}
+                  {downloadLabel(job)}
                 </div>
               </div>
               <div>
@@ -32,7 +32,7 @@ export function DownloadsPage(props: { snap: AppSnapshot }) {
                     Cancel
                   </button>
                 ) : (
-                  <span>{job.total ? bytes(job.total) : ""}</span>
+                  <span>{job.status === "done" ? "Done" : ""}</span>
                 )}
               </div>
               <div className="bar">

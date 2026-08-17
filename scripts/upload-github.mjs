@@ -104,6 +104,29 @@ console.log("2/6  Creating GitHub repos…");
 await ensureRepo(LAUNCHER, "BIG DOG game launcher", false);
 await ensureRepo(GAMES, "BIG DOG game zip downloads", true);
 
+async function seedIfEmpty(name, readme) {
+  const existingFile = await req(`${api}/repos/${owner}/${name}/contents/README.md`);
+  if (existingFile.res.ok) {
+    console.log("    README already present in", name);
+    return;
+  }
+  const commits = await req(`${api}/repos/${owner}/${name}/commits?per_page=1`);
+  if (commits.res.ok && Array.isArray(commits.json) && commits.json.length) return;
+  console.log("    Seeding empty repo", name);
+  const seed = await req(`${api}/repos/${owner}/${name}/contents/README.md`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: "Initial commit",
+      content: Buffer.from(readme).toString("base64"),
+    }),
+  });
+  if (!seed.res.ok && !(seed.res.status === 422 && /sha/i.test(seed.text))) {
+    console.log("    Seed skipped:", seed.text.slice(0, 200));
+  }
+}
+await seedIfEmpty(GAMES, "# bigdog-games\n\nWindows game zips for the BIG DOG launcher.\n");
+
 console.log("3/6  Preparing git…");
 if (!fs.existsSync(path.join(ROOT, ".git"))) {
   git(["init"]);

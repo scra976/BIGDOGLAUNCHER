@@ -13,6 +13,30 @@ export function bytes(n: number): string {
   return `${v.toFixed(v >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
+export function mb(n: number): string {
+  return `${(Math.max(0, n) / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function etaLabel(seconds?: number): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return "calculating…";
+  const s = Math.ceil(seconds);
+  if (s < 60) return `${s}s left`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  if (m < 60) return r ? `${m}m ${r}s left` : `${m}m left`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m left`;
+}
+
+export function downloadLabel(job: DownloadJob): string {
+  if (job.status === "extracting") return "Installing files…";
+  if (job.status === "queued") return "Waiting…";
+  if (job.status === "done") return job.total ? `${mb(job.total)} downloaded` : "Done";
+  const speed = job.bytesPerSec && job.bytesPerSec > 0 ? `${mb(job.bytesPerSec)}/s` : "— MB/s";
+  const total = job.total ? mb(job.total) : "? MB";
+  return `${mb(job.received)} / ${total}  ·  ${speed}  ·  ${etaLabel(job.etaSeconds)}`;
+}
+
 export function pct(job: DownloadJob): number {
   if (!job.total) return job.status === "extracting" || job.status === "done" ? 100 : 0;
   return Math.max(0, Math.min(100, Math.round((job.received / job.total) * 100)));

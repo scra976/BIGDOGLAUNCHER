@@ -38,6 +38,19 @@ node scripts/publish-game.mjs --id ghostclub --notes "Betting UI pass"
 
 Ghost Club on your desktop is ready to pack. Spire of Darkness is the RPG Maker project under `Development\RPG MAKER\TOWER SCALING GAME` — deploy a Windows package first, then pack that output folder.
 
+## Two apps
+
+**Players** get BIG DOG Launcher (`npm.cmd run pack` → `release\BigDogLauncher-Setup-*.exe`). No Studio, no tokens. On open it checks GitHub and **requires** a launcher or game update before they play.
+
+**You** run BIG DOG Studio (`START-STUDIO.bat` or `npm.cmd run dev:studio`). That is where you:
+
+- publish game updates (Ghost Club folder is `Development\GhostClub`)
+- upload a new game
+- change cover / hero art
+- publish a new launcher Setup.exe
+
+Pack a Studio installer with `npm.cmd run pack:studio`.
+
 ## Dev
 
 Needs Node 20+. PowerShell script execution can stay Restricted; call `npm.cmd`.

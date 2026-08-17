@@ -1,7 +1,6 @@
 import { BrowserWindow, dialog, shell } from "electron";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import extract from "extract-zip";
 import fs from "node:fs";
 import path from "node:path";
 import { net } from "electron";
@@ -59,7 +58,7 @@ export function findLaunchFile(root: string, game: GameEntry): string | undefine
   return playable[0] || exes[0];
 }
 
-async function downloadToFile(
+export async function downloadToFile(
   url: string,
   dest: string,
   headers: Record<string, string>,
@@ -216,7 +215,7 @@ export async function installGame(opts: {
   job.status = "extracting";
   job.message = "Installing files…";
   onProgress(job);
-  await extract(zipPath, { dir: extractPath });
+  await extractArchive(zipPath, extractPath);
   const root = unwrapExtractRoot(extractPath);
   const staging = path.join(tmpDir(), `${game.id}-staging`);
   if (fs.existsSync(staging)) fs.rmSync(staging, { recursive: true, force: true });
@@ -348,6 +347,16 @@ export function inferSideloaded(folder: string, idHint?: string): { game: GameEn
     executable,
   };
   return { game, installed };
+}
+
+export async function extractArchive(zipPath: string, dest: string): Promise<void> {
+  ensureDir(dest);
+  try {
+    await execFileAsync("tar.exe", ["-xf", zipPath, "-C", dest], { windowsHide: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Could not unpack the game zip. ${msg}`);
+  }
 }
 
 export async function packFolderToZip(srcDir: string, destZip: string): Promise<void> {

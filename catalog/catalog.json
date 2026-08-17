@@ -3,7 +3,7 @@
   "publisher": {
     "id": "bigdog",
     "name": "BIG DOG",
-    "tagline": "Games from the yard.",
+    "tagline": "BIG DOG GAMES LLC",
     "github": {
       "owner": "scra976",
       "repo": "BIGDOGLAUNCHER"
@@ -18,114 +18,29 @@
   },
   "games": [
     {
-      "id": "kennel",
-      "title": "Kennel",
-      "tagline": "Pet the dog. Spend the treats.",
-      "description": "A bundled BIG DOG house game so the launcher is playable on day one. Click the dog, buy upgrades, and fill the velvet cushion with treats. Ships inside the installer — no download required.",
-      "version": "1.0.0",
-      "released": "2026-08-16",
-      "genre": "Casual",
-      "tags": [
-        "Bundled",
-        "Clicker"
-      ],
-      "cover": "covers/kennel.jpg",
-      "hero": "hero.jpg",
-      "featured": false,
-      "bundled": true,
-      "bundledPath": "kennel",
-      "launch": {
-        "kind": "html",
-        "executable": "index.html"
-      }
-    },
-    {
-      "id": "spire",
-      "title": "The Spire Of Darkness",
-      "tagline": "Climb until the dark answers.",
-      "description": "An RPG Maker MZ tower climb. Export a Windows package from RPG Maker, pack it in Studio, and drop the zip on a GitHub release. Players hit Update in the launcher the next time they open BIG DOG.",
-      "version": "1.0.0",
-      "released": "2026-07-15",
-      "genre": "RPG",
-      "tags": [
-        "RPG Maker",
-        "Tower"
-      ],
-      "cover": "covers/spire.jpg",
-      "hero": "covers/spire.jpg",
-      "featured": true,
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "SpireOfDarkness-windows.zip",
-        "useLatestRelease": true
-      },
-      "launch": {
-        "kind": "exe",
-        "executable": "Game.exe"
-      },
-      "preserve": [
-        "save",
-        "www/save"
-      ]
-    },
-    {
-      "id": "cryptotable",
-      "title": "Crypto Table",
-      "tagline": "Cards over gold circuitry.",
-      "description": "The browser casino table. Publish a zip of the Vite build (index.html at the root) or point the launch URL at a hosted build. The launcher opens it in its own window.",
-      "version": "1.0.0",
-      "released": "2026-08-10",
-      "genre": "Casino",
-      "tags": [
-        "Web",
-        "Cards"
-      ],
-      "cover": "covers/cryptotable.jpg",
-      "hero": "covers/cryptotable.jpg",
-      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "CryptoTable-windows.zip",
-        "useLatestRelease": true
-      },
-      "launch": {
-        "kind": "html",
-        "executable": "index.html"
-      }
-    },
-    {
       "id": "ghostclub",
       "title": "Ghost Club",
       "tagline": "Neon nights. High stakes.",
-      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid. Export the Godot build, pack it in Studio, and publish a GitHub release to push updates to every player.",
+      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid.",
       "version": "1.0.0",
       "released": "2026-08-01",
       "genre": "Casino",
-      "tags": [
-        "Godot",
-        "Casino"
-      ],
+      "tags": ["Godot", "Casino"],
       "cover": "covers/ghostclub.jpg",
       "hero": "covers/ghostclub-hero.jpg",
       "featured": true,
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
       "github": {
         "owner": "scra976",
         "repo": "bigdog-games",
         "asset": "GhostClub-windows.zip",
         "useLatestRelease": true
       },
-      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
       "launch": {
         "kind": "exe",
         "executable": "Casino.exe"
       },
-      "preserve": [
-        "save",
-        "user://",
-        "saves"
-      ]
+      "preserve": ["save", "user://", "saves"]
     }
   ]
 }

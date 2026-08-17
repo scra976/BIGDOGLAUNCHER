@@ -2,7 +2,7 @@ import { net } from "electron";
 import fs from "node:fs";
 import type { Catalog, GameEntry } from "../shared/types";
 import type { CatalogSource } from "../shared/types";
-import { bundledCatalogFile, joinUrl, userData } from "./paths";
+import { bundledCatalogFile, userData } from "./paths";
 
 const EMPTY: Catalog = {
   schemaVersion: 1,
@@ -40,7 +40,10 @@ export function writeCachedCatalog(catalog: Catalog): void {
 
 export function normalizeCatalog(raw: unknown): Catalog {
   const data = (raw && typeof raw === "object" ? raw : {}) as Partial<Catalog>;
-  const games = Array.isArray(data.games) ? data.games.filter((g) => g && g.id && g.title) : [];
+  const removed = new Set(["kennel", "spire", "cryptotable"]);
+  const games = Array.isArray(data.games)
+    ? data.games.filter((g) => g && g.id && g.title && !removed.has(g.id))
+    : [];
   return {
     schemaVersion: Number(data.schemaVersion || 1),
     publisher: {
@@ -59,13 +62,15 @@ export function resolveCatalogMedia(
   catalogUrl: string,
   source: CatalogSource = "bundled",
 ): Catalog {
+  void catalogUrl;
+  void source;
   const rewrite = (value?: string) => {
     if (!value) return value;
-    if (/^https?:\/\//i.test(value) || /^file:/i.test(value) || /^data:/i.test(value) || /^bigdog:/i.test(value)) {
-      return value;
-    }
-    if (source !== "bundled" && /^https?:\/\//i.test(catalogUrl)) return joinUrl(catalogUrl, value);
-    return "bigdog://asset/" + value.replace(/^\/+/, "");
+    if (/^data:/i.test(value) || /^bigdog:/i.test(value)) return value;
+    const name = value.split(/[/\\]/).pop() || "";
+    if (name.toLowerCase() === "hero.jpg") return "./hero.jpg";
+    if (/\.(jpg|jpeg|png|webp|gif)$/i.test(name)) return `./covers/${name}`;
+    return value;
   };
   return {
     ...catalog,

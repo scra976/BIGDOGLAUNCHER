@@ -4,7 +4,6 @@ const items: { id: PageId; label: string }[] = [
   { id: "store", label: "Store" },
   { id: "library", label: "Library" },
   { id: "downloads", label: "Downloads" },
-  { id: "studio", label: "Studio" },
   { id: "settings", label: "Settings" },
 ];
 
@@ -28,7 +27,7 @@ export function Sidebar(props: {
         </button>
       ))}
       <div className="side-foot">
-        <strong>{props.snap.catalog.publisher.tagline || "Games from the yard."}</strong>
+        <strong>{props.snap.catalog.publisher.tagline || "BIG DOG GAMES LLC"}</strong>
         <div>v{props.snap.appVersion}</div>
         {props.snap.launcherUpdate ? <div>Launcher {props.snap.launcherUpdate.version} is out.</div> : null}
       </div>

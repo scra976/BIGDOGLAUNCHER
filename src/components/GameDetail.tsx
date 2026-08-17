@@ -1,5 +1,5 @@
 import type { AppSnapshot, GameEntry } from "../../shared/types";
-import { actionLabel, bytes, displayVersion, gameAction, pct, timeAgo } from "../lib/format";
+import { actionLabel, displayVersion, downloadLabel, gameAction, pct, timeAgo } from "../lib/format";
 
 export function GameDetail(props: {
   game: GameEntry;
@@ -35,15 +35,10 @@ export function GameDetail(props: {
             <button type="button" className="btn gold" onClick={props.onPrimary} disabled={action === "coming" || action === "busy"}>
               {actionLabel(action)}
             </button>
-            {installed ? (
-              <>
-                <button type="button" className="btn ghost" onClick={() => run(() => window.bigdog.openFolder(game.id))}>
-                  Open folder
-                </button>
-                <button type="button" className="btn danger" onClick={() => run(() => window.bigdog.uninstall(game.id))}>
-                  Uninstall
-                </button>
-              </>
+            {installed && action !== "update" ? (
+              <button type="button" className="btn danger" onClick={() => run(() => window.bigdog.uninstall(game.id))}>
+                Remove
+              </button>
             ) : null}
           </div>
         </div>
@@ -51,9 +46,7 @@ export function GameDetail(props: {
       {job && ["queued", "downloading", "extracting"].includes(job.status) ? (
         <div className="panel" style={{ marginBottom: 16 }}>
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <strong>
-              {job.message} {job.total ? `${bytes(job.received)} / ${bytes(job.total)}` : ""}
-            </strong>
+            <strong>{downloadLabel(job)}</strong>
             <button type="button" className="btn ghost" onClick={() => window.bigdog.cancel(game.id)}>
               Cancel
             </button>
@@ -86,37 +79,9 @@ export function GameDetail(props: {
               <b>{displayVersion(remote?.version || game.version)}</b>
             </div>
             <div>
-              <span>Source</span>
-              <b>{installed?.source || (game.bundled ? "bundled" : "github")}</b>
-            </div>
-            <div>
               <span>Last played</span>
               <b>{timeAgo(snap.lastPlayed[game.id]) || "—"}</b>
             </div>
-            {game.github ? (
-              <div>
-                <span>Repo</span>
-                <b>
-                  {game.github.owner}/{game.github.repo}
-                </b>
-              </div>
-            ) : null}
-          </div>
-          <div className="row" style={{ marginTop: 16 }}>
-            <button type="button" className="btn ghost" onClick={() => run(() => window.bigdog.importLocal(game.id))}>
-              Use local build
-            </button>
-            {game.github ? (
-              <button
-                type="button"
-                className="btn ghost"
-                onClick={() =>
-                  window.bigdog.openExternal(`https://github.com/${game.github!.owner}/${game.github!.repo}/releases`)
-                }
-              >
-                GitHub releases
-              </button>
-            ) : null}
           </div>
         </div>
       </div>

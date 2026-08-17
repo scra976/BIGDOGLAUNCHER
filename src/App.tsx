@@ -6,16 +6,20 @@ import { LibraryPage } from "./components/Library";
 import { SettingsPage } from "./components/Settings";
 import { Sidebar } from "./components/Sidebar";
 import { StorePage } from "./components/Store";
-import { StudioPage } from "./components/Studio";
 import { TitleBar } from "./components/TitleBar";
-import { allGames, gameAction, pct } from "./lib/format";
+import { UpdateGate } from "./components/UpdateGate";
+import { allGames, downloadLabel, gameAction, pct } from "./lib/format";
+import { StudioApp } from "./studio/StudioApp";
 
 const empty: AppSnapshot = {
+  role: "player",
+  bootstrapped: false,
   settings: {
     catalogUrl: "",
     libraryPath: "",
     githubTokenSet: false,
     checkUpdates: true,
+    workspacePath: "",
   },
   catalog: { schemaVersion: 1, publisher: { id: "bigdog", name: "BIG DOG" }, games: [] },
   catalogSource: "bundled",
@@ -23,6 +27,7 @@ const empty: AppSnapshot = {
   lastPlayed: {},
   downloads: [],
   remoteVersions: {},
+  pendingGameIds: [],
   appVersion: "1.0.0",
   sideloaded: [],
 };
@@ -42,7 +47,7 @@ export function App() {
     const offToast = window.bigdog.onToast((t) => {
       const id = Date.now() + Math.random();
       setToasts((prev) => [...prev.slice(-4), { id, ...t }]);
-      window.setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 5200);
+      window.setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), t.kind === "info" ? 10000 : 5200);
     });
     return () => {
       alive = false;
@@ -54,6 +59,13 @@ export function App() {
   const games = useMemo(() => allGames(snap), [snap]);
   const selectedGame = games.find((g) => g.id === selected) || null;
   const activeJob = snap.downloads.find((d) => ["queued", "downloading", "extracting"].includes(d.status));
+
+  function pushErr(text?: string) {
+    if (!text) return;
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, kind: "err", text }]);
+    window.setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 6200);
+  }
 
   function openGame(game: GameEntry) {
     setSelected(game.id);
@@ -73,12 +85,24 @@ export function App() {
     }
   }
 
-  function pushErr(text?: string) {
-    if (!text) return;
-    const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev, { id, kind: "err", text }]);
-    window.setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 6200);
+  if (snap.role === "studio") {
+    return (
+      <>
+        <StudioApp snap={snap} onError={pushErr} />
+        <div className="toasts">
+          {toasts.map((t) => (
+            <div key={t.id} className={`toast ${t.kind}`}>
+              {t.text}
+            </div>
+          ))}
+        </div>
+      </>
+    );
   }
+
+  const needsGate =
+    snap.bootstrapped &&
+    Boolean(snap.launcherUpdate || snap.pendingGameIds.length);
 
   return (
     <div className="app">
@@ -93,7 +117,9 @@ export function App() {
           snap={snap}
         />
         <main className="main">
-          {selectedGame ? (
+          {needsGate ? (
+            <UpdateGate snap={snap} onError={pushErr} />
+          ) : selectedGame ? (
             <GameDetail
               game={selectedGame}
               snap={snap}
@@ -103,21 +129,19 @@ export function App() {
             />
           ) : page === "library" ? (
             <LibraryPage snap={snap} games={games} onOpen={openGame} onPrimary={runPrimary} />
-          ) : page === "store" ? (
-            <StorePage snap={snap} games={games} onOpen={openGame} onPrimary={runPrimary} />
           ) : page === "downloads" ? (
             <DownloadsPage snap={snap} />
-          ) : page === "studio" ? (
-            <StudioPage snap={snap} games={games} onError={pushErr} />
-          ) : (
+          ) : page === "settings" ? (
             <SettingsPage snap={snap} onError={pushErr} />
+          ) : (
+            <StorePage snap={snap} games={games} onOpen={openGame} onPrimary={runPrimary} />
           )}
         </main>
       </div>
       {activeJob ? (
         <div className="dock">
           <b>{activeJob.title}</b>
-          <span>{activeJob.message || activeJob.status}</span>
+          <span>{downloadLabel(activeJob)}</span>
           <div className="bar">
             <i style={{ width: `${pct(activeJob)}%` }} />
           </div>
@@ -126,8 +150,8 @@ export function App() {
       ) : (
         <div className="dock">
           <span>
-            {snap.catalog.publisher.name} · catalog {snap.catalogSource}
-            {snap.catalogError ? " · offline fallback" : ""}
+            {snap.catalog.publisher.name}
+            {snap.bootstrapped ? "" : " · checking updates…"}
           </span>
         </div>
       )}

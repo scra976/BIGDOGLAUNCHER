@@ -1,0 +1,36 @@
+appId: com.bigdog.studio
+productName: BIG DOG Studio
+extraMetadata:
+  name: bigdog-studio
+copyright: Copyright © 2026 BIG DOG
+asar: true
+directories:
+  output: release-studio
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+extraResources:
+  - from: catalog
+    to: catalog
+  - from: bundled-games
+    to: bundled-games
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: BIG DOG Studio
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  unicode: true
+  artifactName: BigDogStudio-Setup-${version}.exe
+  include: build/installer.nsh

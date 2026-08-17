@@ -46,9 +46,17 @@ export async function githubJson<T>(url: string, token?: string, init?: RequestI
   });
   const text = await res.text();
   if (!res.ok) {
-    throw new GitHubError(res.status, `GitHub ${res.status}: ${text.slice(0, 240)}`);
+    throw new GitHubError(res.status, `GitHub ${res.status}: ${formatGitHubBody(text)}`);
   }
   return text ? (JSON.parse(text) as T) : ({} as T);
+}
+
+export function findSetupAsset(release: GitHubRelease): GitHubAsset | undefined {
+  const assets = release.assets || [];
+  return (
+    assets.find((a) => /setup.*\.exe$/i.test(a.name)) ||
+    assets.find((a) => /\.exe$/i.test(a.name))
+  );
 }
 
 export async function latestRelease(owner: string, repo: string, token?: string): Promise<GitHubRelease> {
@@ -166,6 +174,99 @@ export async function resolveRemoteVersion(game: GameEntry, token?: string): Pro
   }
 }
 
+function formatGitHubBody(text: string): string {
+  try {
+    const j = JSON.parse(text) as { message?: string; errors?: { message?: string; code?: string }[] };
+    const extra = (j.errors || []).map((e) => e.message || e.code).filter(Boolean).join("; ");
+    return [j.message, extra].filter(Boolean).join(" — ") || text.slice(0, 240);
+  } catch {
+    return text.slice(0, 240);
+  }
+}
+
+export async function ensureRepoHasCommit(owner: string, repo: string, token: string): Promise<void> {
+  const readme = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/README.md`,
+    { headers: headers(token) },
+  );
+  if (readme.ok) return;
+  const commits = await githubJson<unknown[]>(
+    `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+    token,
+  ).catch(() => []);
+  if (Array.isArray(commits) && commits.length) return;
+
+  const seed = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/README.md`, {
+    method: "PUT",
+    headers: { ...headers(token), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: "Initial commit",
+      content: Buffer.from(`# ${repo}\n\nBIG DOG releases.\n`).toString("base64"),
+    }),
+  });
+  if (seed.ok) return;
+  const text = await seed.text();
+  if (seed.status === 422 && /sha/i.test(text)) return;
+  if (!seed.ok && seed.status !== 422) {
+    throw new GitHubError(seed.status, `Could not prepare ${owner}/${repo}: ${formatGitHubBody(text)}`);
+  }
+}
+
+export async function getReleaseByTag(
+  owner: string,
+  repo: string,
+  tag: string,
+  token: string,
+): Promise<GitHubRelease | null> {
+  try {
+    return await githubJson<GitHubRelease>(
+      `https://api.github.com/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`,
+      token,
+    );
+  } catch (err) {
+    if (err instanceof GitHubError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+export async function deleteReleaseAsset(owner: string, repo: string, assetId: number, token: string): Promise<void> {
+  const res = await net.fetch(`https://api.github.com/repos/${owner}/${repo}/releases/assets/${assetId}`, {
+    method: "DELETE",
+    headers: headers(token),
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new GitHubError(res.status, `Could not replace old zip: ${formatGitHubBody(await res.text())}`);
+  }
+}
+
+export async function createOrGetRelease(opts: {
+  owner: string;
+  repo: string;
+  tag: string;
+  name: string;
+  body: string;
+  token: string;
+}): Promise<GitHubRelease> {
+  await ensureRepoHasCommit(opts.owner, opts.repo, opts.token);
+  const existing = await getReleaseByTag(opts.owner, opts.repo, opts.tag, opts.token);
+  if (existing) return existing;
+  try {
+    return await createRelease(opts);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/empty/i.test(msg)) {
+      await ensureRepoHasCommit(opts.owner, opts.repo, opts.token);
+      await new Promise((r) => setTimeout(r, 1200));
+      return await createRelease(opts);
+    }
+    if (/already_exists|already exists/i.test(msg)) {
+      const again = await getReleaseByTag(opts.owner, opts.repo, opts.tag, opts.token);
+      if (again) return again;
+    }
+    throw err;
+  }
+}
+
 export async function createRelease(opts: {
   owner: string;
   repo: string;
@@ -210,6 +311,6 @@ export async function uploadReleaseAsset(opts: {
     body: opts.bytes,
   });
   const text = await res.text();
-  if (!res.ok) throw new GitHubError(res.status, `Upload failed ${res.status}: ${text.slice(0, 240)}`);
+  if (!res.ok) throw new GitHubError(res.status, `Upload failed ${res.status}: ${formatGitHubBody(text)}`);
   return JSON.parse(text) as GitHubAsset;
 }

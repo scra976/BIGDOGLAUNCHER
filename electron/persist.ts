@@ -7,6 +7,7 @@ import { defaultLibraryPath, ensureDir, userData } from "./paths";
 export interface PersistedSettings {
   catalogUrl: string;
   libraryPath: string;
+  workspacePath: string;
   githubTokenEnc?: string;
   githubTokenPlain?: string;
   checkUpdates: boolean;
@@ -17,6 +18,8 @@ export interface PersistedState {
   installed: Record<string, InstalledGame>;
   lastPlayed: Record<string, string>;
   sideloaded: GameEntry[];
+  lastNotifiedLauncher?: string;
+  lastNotifiedGames?: Record<string, string>;
 }
 
 const DEFAULT_CATALOG_URL =
@@ -26,10 +29,13 @@ function stateFile(): string {
   return userData("state.json");
 }
 
+export const DEFAULT_WORKSPACE = "C:\\Users\\Wesle\\Desktop\\Development\\BIGDOGLAUNCHER";
+
 export function defaultSettings(): PersistedSettings {
   return {
     catalogUrl: DEFAULT_CATALOG_URL,
     libraryPath: defaultLibraryPath(),
+    workspacePath: DEFAULT_WORKSPACE,
     checkUpdates: true,
   };
 }
@@ -52,6 +58,8 @@ export function loadState(): PersistedState {
       installed: parsed.installed || {},
       lastPlayed: parsed.lastPlayed || {},
       sideloaded: parsed.sideloaded || [],
+      lastNotifiedLauncher: parsed.lastNotifiedLauncher,
+      lastNotifiedGames: parsed.lastNotifiedGames || {},
     };
   } catch {
     return defaultState();

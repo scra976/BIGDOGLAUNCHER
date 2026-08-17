@@ -1,6 +1,6 @@
 {
   "name": "bigdog-launcher",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "BIG DOG Launcher — install, play, and update games from GitHub.",
   "author": "BIG DOG",
   "license": "MIT",
@@ -8,8 +8,10 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
+    "dev:studio": "node scripts/dev-studio.mjs",
     "build": "vite build",
     "pack": "vite build && electron-builder --win nsis",
+    "pack:studio": "vite build && electron-builder --config electron-builder.studio.yml --win nsis",
     "pack:dir": "vite build && electron-builder --win dir",
     "preview": "vite preview",
     "postinstall": "node scripts/ensure-electron.mjs"

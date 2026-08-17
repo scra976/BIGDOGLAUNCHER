@@ -1,9 +1,9 @@
-export function TitleBar() {
+export function TitleBar(props: { studio?: boolean }) {
   return (
     <header className="titlebar">
       <div className="wordmark">
         <img src="./logo.jpg" alt="" />
-        BIG DOG
+        {props.studio ? "BIG DOG STUDIO" : "BIG DOG"}
       </div>
       <div className="win-btns">
         <button type="button" onClick={() => window.bigdog.windowMin()} aria-label="Minimize">
