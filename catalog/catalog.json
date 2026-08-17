@@ -18,11 +18,43 @@
   },
   "games": [
     {
+      "id": "socc",
+      "title": "Scrap's Online Crypto Casino",
+      "tagline": "Crypto Casino",
+      "description": "Top of the line online crypto casino.",
+      "developer": "BIGDOG STUDIOS",
+      "publisher": "BIGDOG LLC",
+      "version": "1.0.3",
+      "genre": "Casino",
+      "locked": false,
+      "cover": "./covers/socc.jpg",
+      "hero": "./covers/socc-hero.jpg",
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
+      "github": {
+        "owner": "scra976",
+        "repo": "bigdog-games",
+        "asset": "socc-windows.zip",
+        "useLatestRelease": true
+      },
+      "launch": {
+        "kind": "html",
+        "executable": "index.html",
+        "htmlMode": "launcher"
+      },
+      "preserve": [
+        "save",
+        "saves",
+        "saved",
+        "userdata",
+        "user"
+      ]
+    },
+    {
       "id": "ghostclub",
       "title": "Ghost Club",
       "tagline": "Neon nights. High stakes.",
       "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid.",
-      "version": "2.0.1",
+      "version": "2.1",
       "released": "2026-08-01",
       "genre": "Casino",
       "tags": [
@@ -32,6 +64,7 @@
       "cover": "./covers/ghostclub.jpg",
       "hero": "./covers/ghostclub-hero.jpg",
       "featured": true,
+      "locked": false,
       "developer": "BIGDOG STUDIOS",
       "publisher": "BIGDOG LLC",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
@@ -53,37 +86,6 @@
         "user://",
         "Save",
         "Saves"
-      ]
-    },
-    {
-      "id": "socc",
-      "title": "Scrap's Online Crypto Casino",
-      "tagline": "Crypto Casino",
-      "description": "Top of the line online crypto casino.",
-      "developer": "BIGDOG STUDIOS",
-      "publisher": "BIGDOG LLC",
-      "version": "1.0.3",
-      "genre": "Casino",
-      "cover": "./covers/socc.jpg",
-      "hero": "./covers/socc-hero.jpg",
-      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "socc-windows.zip",
-        "useLatestRelease": true
-      },
-      "launch": {
-        "kind": "html",
-        "executable": "index.html",
-        "htmlMode": "launcher"
-      },
-      "preserve": [
-        "save",
-        "saves",
-        "saved",
-        "userdata",
-        "user"
       ]
     }
   ]
