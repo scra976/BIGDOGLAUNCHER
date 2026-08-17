@@ -3,18 +3,10 @@
   "publisher": {
     "id": "bigdog",
     "name": "BIGDOG LLC",
-    "tagline": "BIGDOG STUDIOS",
-    "github": {
-      "owner": "scra976",
-      "repo": "BIGDOGLAUNCHER"
-    }
+    "tagline": "BIGDOG STUDIOS"
   },
   "launcher": {
-    "version": "1.2.7",
-    "github": {
-      "owner": "scra976",
-      "repo": "BIGDOGLAUNCHER"
-    }
+    "version": "1.2.7"
   },
   "games": [
     {
@@ -30,12 +22,6 @@
       "cover": "./covers/socc.jpg",
       "hero": "./covers/socc-hero.jpg",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "socc-windows.zip",
-        "useLatestRelease": true
-      },
       "launch": {
         "kind": "html",
         "executable": "index.html",
@@ -68,12 +54,6 @@
       "developer": "BIGDOG STUDIOS",
       "publisher": "BIGDOG LLC",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "GhostClub-windows.zip",
-        "useLatestRelease": true
-      },
       "launch": {
         "kind": "exe"
       },
