@@ -62,10 +62,10 @@
       "description": "Top of the line online crypto casino.",
       "developer": "BIGDOG STUDIOS",
       "publisher": "BIGDOG LLC",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "genre": "Casino",
-      "cover": "",
-      "hero": "",
+      "cover": "./covers/socc.jpg",
+      "hero": "./covers/socc-hero.jpg",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
       "github": {
         "owner": "scra976",
