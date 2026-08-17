@@ -10,7 +10,7 @@
     }
   },
   "launcher": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "github": {
       "owner": "scra976",
       "repo": "BIGDOGLAUNCHER"
@@ -25,7 +25,10 @@
       "version": "1.0.0",
       "released": "2026-08-16",
       "genre": "Casual",
-      "tags": ["Bundled", "Clicker"],
+      "tags": [
+        "Bundled",
+        "Clicker"
+      ],
       "cover": "covers/kennel.jpg",
       "hero": "hero.jpg",
       "featured": false,
@@ -37,30 +40,6 @@
       }
     },
     {
-      "id": "ghostclub",
-      "title": "Ghost Club",
-      "tagline": "Neon nights. High stakes.",
-      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid. Export the Godot build, pack it in Studio, and publish a GitHub release to push updates to every player.",
-      "version": "1.0.0",
-      "released": "2026-08-01",
-      "genre": "Casino",
-      "tags": ["Godot", "Casino"],
-      "cover": "covers/ghostclub.jpg",
-      "hero": "covers/ghostclub.jpg",
-      "featured": true,
-      "github": {
-        "owner": "scra976",
-        "repo": "bigdog-games",
-        "asset": "GhostClub-windows.zip",
-        "useLatestRelease": true
-      },
-      "launch": {
-        "kind": "exe",
-        "executable": "Casino.exe"
-      },
-      "preserve": ["save", "user://", "saves"]
-    },
-    {
       "id": "spire",
       "title": "The Spire Of Darkness",
       "tagline": "Climb until the dark answers.",
@@ -68,7 +47,10 @@
       "version": "1.0.0",
       "released": "2026-07-15",
       "genre": "RPG",
-      "tags": ["RPG Maker", "Tower"],
+      "tags": [
+        "RPG Maker",
+        "Tower"
+      ],
       "cover": "covers/spire.jpg",
       "hero": "covers/spire.jpg",
       "featured": true,
@@ -82,7 +64,10 @@
         "kind": "exe",
         "executable": "Game.exe"
       },
-      "preserve": ["save", "www/save"]
+      "preserve": [
+        "save",
+        "www/save"
+      ]
     },
     {
       "id": "cryptotable",
@@ -92,9 +77,13 @@
       "version": "1.0.0",
       "released": "2026-08-10",
       "genre": "Casino",
-      "tags": ["Web", "Cards"],
+      "tags": [
+        "Web",
+        "Cards"
+      ],
       "cover": "covers/cryptotable.jpg",
       "hero": "covers/cryptotable.jpg",
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
       "github": {
         "owner": "scra976",
         "repo": "bigdog-games",
@@ -105,6 +94,38 @@
         "kind": "html",
         "executable": "index.html"
       }
+    },
+    {
+      "id": "ghostclub",
+      "title": "Ghost Club",
+      "tagline": "Neon nights. High stakes.",
+      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid. Export the Godot build, pack it in Studio, and publish a GitHub release to push updates to every player.",
+      "version": "1.0.0",
+      "released": "2026-08-01",
+      "genre": "Casino",
+      "tags": [
+        "Godot",
+        "Casino"
+      ],
+      "cover": "covers/ghostclub.jpg",
+      "hero": "covers/ghostclub-hero.jpg",
+      "featured": true,
+      "github": {
+        "owner": "scra976",
+        "repo": "bigdog-games",
+        "asset": "GhostClub-windows.zip",
+        "useLatestRelease": true
+      },
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
+      "launch": {
+        "kind": "exe",
+        "executable": "Casino.exe"
+      },
+      "preserve": [
+        "save",
+        "user://",
+        "saves"
+      ]
     }
   ]
 }
