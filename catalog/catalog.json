@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "publisher": {
     "id": "bigdog",
-    "name": "BIG DOG",
-    "tagline": "BIG DOG GAMES LLC",
+    "name": "BIGDOG LLC",
+    "tagline": "BIGDOG STUDIOS",
     "github": {
       "owner": "scra976",
       "repo": "BIGDOGLAUNCHER"
     }
   },
   "launcher": {
-    "version": "1.1.0",
+    "version": "1.2.6",
     "github": {
       "owner": "scra976",
       "repo": "BIGDOGLAUNCHER"
@@ -22,13 +22,18 @@
       "title": "Ghost Club",
       "tagline": "Neon nights. High stakes.",
       "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid.",
-      "version": "1.0.0",
+      "version": "2.0.1",
       "released": "2026-08-01",
       "genre": "Casino",
-      "tags": ["Godot", "Casino"],
-      "cover": "covers/ghostclub.jpg",
-      "hero": "covers/ghostclub-hero.jpg",
+      "tags": [
+        "Godot",
+        "Casino"
+      ],
+      "cover": "./covers/ghostclub.jpg",
+      "hero": "./covers/ghostclub-hero.jpg",
       "featured": true,
+      "developer": "BIGDOG STUDIOS",
+      "publisher": "BIGDOG LLC",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
       "github": {
         "owner": "scra976",
@@ -37,10 +42,49 @@
         "useLatestRelease": true
       },
       "launch": {
-        "kind": "exe",
-        "executable": "Casino.exe"
+        "kind": "exe"
       },
-      "preserve": ["save", "user://", "saves"]
+      "preserve": [
+        "save",
+        "saves",
+        "saved",
+        "userdata",
+        "user",
+        "user://",
+        "Save",
+        "Saves"
+      ]
+    },
+    {
+      "id": "socc",
+      "title": "Scrap's Online Crypto Casino",
+      "tagline": "Crypto Casino",
+      "description": "Top of the line online crypto casino.",
+      "developer": "SCRAP",
+      "publisher": "BIGDOG LLC",
+      "version": "1.0.0",
+      "genre": "Casino",
+      "cover": "",
+      "hero": "",
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino",
+      "github": {
+        "owner": "scra976",
+        "repo": "bigdog-games",
+        "asset": "socc-windows.zip",
+        "useLatestRelease": true
+      },
+      "launch": {
+        "kind": "html",
+        "executable": "index.html",
+        "htmlMode": "launcher"
+      },
+      "preserve": [
+        "save",
+        "saves",
+        "saved",
+        "userdata",
+        "user"
+      ]
     }
   ]
 }
