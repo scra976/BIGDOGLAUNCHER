@@ -6,22 +6,85 @@
     "tagline": "BIGDOG STUDIOS"
   },
   "launcher": {
-    "version": "1.2.7"
+    "version": "1.2.18",
+    "github": {
+      "owner": "scra976",
+      "repo": "BIGDOGLAUNCHER"
+    },
+    "studio": {
+      "version": "1.2.17",
+      "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogStudio-Setup-1.2.17.zip?alt=media&token=038a9b13-5f3d-49b5-a46d-0d7c5132bddf",
+      "setupName": "BigDogStudio-Setup-1.2.17.zip"
+    },
+    "dev": {
+      "version": "1.2.9"
+    },
+    "notes": "",
+    "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogLauncher-Setup-1.2.18.zip?alt=media&token=e80d3fb3-3f9e-4703-a74b-1fa638686a4c",
+    "setupName": "BigDogLauncher-Setup-1.2.18.zip"
   },
   "games": [
     {
+      "downloadUrl": "https://github.com/scra976/bigdog-games/releases/download/ghostclub-v2.2.0/GhostClub-windows.zip",
+      "genre": "Casino",
+      "version": "2.2.0",
+      "title": "Ghost Club",
+      "released": "",
+      "id": "ghostclub",
+      "featured": true,
+      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid.",
+      "storagePath": "",
+      "github": {
+        "asset": "GhostClub-windows.zip",
+        "tag": "ghostclub-v2.2.0",
+        "repo": "bigdog-games",
+        "useLatestRelease": true,
+        "owner": "scra976"
+      },
+      "publisher": "BIGDOG LLC",
+      "tagline": "Neon nights. High stakes.",
+      "comingSoon": false,
+      "tags": [],
+      "preserve": [
+        "save",
+        "saves",
+        "saved",
+        "userdata",
+        "user"
+      ],
+      "hero": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/covers%2Fghostclub%2Fhero.jpg?alt=media&token=91e98e3e-2cd8-446d-b983-8e17c04f8bb8",
+      "notes": "Act 2, Final Wishes, leaderboard, Next Stage, shop page 2.",
+      "launch": {
+        "htmlMode": "",
+        "kind": "exe",
+        "executable": "GhostClub.exe"
+      },
+      "visible": true,
+      "locked": false,
+      "cover": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/covers%2Fghostclub%2Fcover.jpg?alt=media&token=44c11bd6-d851-46d0-99d6-70e2dc36234a",
+      "paid": false,
+      "developer": "BIGDOG STUDIOS",
+      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub"
+    },
+    {
       "id": "socc",
-      "title": "Scrap's Online Crypto Casino",
-      "tagline": "Crypto Casino",
-      "description": "Top of the line online crypto casino.",
+      "title": "SCRAP'S ONLINE CRYPTO CASINO",
+      "tagline": "Fun Casino Game",
+      "description": "Slots, blackjack, roulette, plinko, crash, and mines — pure frontend demo chips, no real money. Includes high-roller Dragon's Lair.",
       "developer": "BIGDOG STUDIOS",
       "publisher": "BIGDOG LLC",
-      "version": "1.0.3",
+      "version": "1.2.4",
       "genre": "Casino",
       "locked": false,
-      "cover": "./covers/socc.jpg",
-      "hero": "./covers/socc-hero.jpg",
+      "cover": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/covers%2Fsocc%2Fcover.jpg?alt=media&token=db147d45-2069-4fa2-846c-2000bda9499a",
+      "hero": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/covers%2Fsocc%2Fhero.jpg?alt=media&token=527942aa-3314-47c1-9965-171e1d84d1c2",
       "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\Crypto Casino\\dist",
+      "github": {
+        "owner": "scra976",
+        "repo": "bigdog-games",
+        "asset": "socc-windows.zip",
+        "useLatestRelease": true
+      },
       "launch": {
         "kind": "html",
         "executable": "index.html",
@@ -33,40 +96,10 @@
         "saved",
         "userdata",
         "user"
-      ]
-    },
-    {
-      "id": "ghostclub",
-      "title": "Ghost Club",
-      "tagline": "Neon nights. High stakes.",
-      "description": "A Godot casino night at the Ghost Club. Deal, bet, and stay long enough to see who is still solid.",
-      "version": "2.1.3",
-      "released": "2026-08-01",
-      "genre": "Casino",
-      "tags": [
-        "Godot",
-        "Casino"
       ],
-      "cover": "./covers/ghostclub.jpg",
-      "hero": "./covers/ghostclub-hero.jpg",
-      "featured": true,
-      "locked": false,
-      "developer": "BIGDOG STUDIOS",
-      "publisher": "BIGDOG LLC",
-      "devSource": "C:\\Users\\Wesle\\Desktop\\Development\\GhostClub",
-      "launch": {
-        "kind": "exe"
-      },
-      "preserve": [
-        "save",
-        "saves",
-        "saved",
-        "userdata",
-        "user",
-        "user://",
-        "Save",
-        "Saves"
-      ]
+      "storagePath": "",
+      "downloadUrl": "",
+      "ownerUid": "VHX0ejXUOmgJhwaWBlFVuBqHUe62"
     }
   ]
 }
