@@ -6,28 +6,28 @@
     "tagline": "BIGDOG STUDIOS"
   },
   "launcher": {
-    "version": "1.2.18",
+    "version": "1.2.19",
     "github": {
       "owner": "scra976",
       "repo": "BIGDOGLAUNCHER"
     },
     "studio": {
-      "version": "1.2.17",
-      "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogStudio-Setup-1.2.17.zip?alt=media&token=038a9b13-5f3d-49b5-a46d-0d7c5132bddf",
-      "setupName": "BigDogStudio-Setup-1.2.17.zip"
+      "version": "1.2.19",
+      "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogStudio-Setup-1.2.19.zip?alt=media&token=325fe50c-89aa-4e74-b9be-bd4570d69e84",
+      "setupName": "BigDogStudio-Setup-1.2.19.zip"
     },
     "dev": {
       "version": "1.2.9"
     },
     "notes": "",
-    "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogLauncher-Setup-1.2.18.zip?alt=media&token=e80d3fb3-3f9e-4703-a74b-1fa638686a4c",
-    "setupName": "BigDogLauncher-Setup-1.2.18.zip"
+    "downloadUrl": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/launcher%2FBigDogLauncher-Setup-1.2.19.zip?alt=media&token=66d37323-3755-4bc6-88d4-710bcbfca862",
+    "setupName": "BigDogLauncher-Setup-1.2.19.zip"
   },
   "games": [
     {
-      "downloadUrl": "https://github.com/scra976/bigdog-games/releases/download/ghostclub-v2.2.0/GhostClub-windows.zip",
+      "downloadUrl": "https://github.com/scra976/bigdog-games/releases/download/ghostclub-v2.3.0/GhostClub-windows.zip",
       "genre": "Casino",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "title": "Ghost Club",
       "released": "",
       "id": "ghostclub",
@@ -36,7 +36,7 @@
       "storagePath": "",
       "github": {
         "asset": "GhostClub-windows.zip",
-        "tag": "ghostclub-v2.2.0",
+        "tag": "ghostclub-v2.3.0",
         "repo": "bigdog-games",
         "useLatestRelease": true,
         "owner": "scra976"
@@ -53,7 +53,7 @@
         "user"
       ],
       "hero": "https://firebasestorage.googleapis.com/v0/b/bigdogstudios-38ebf.firebasestorage.app/o/covers%2Fghostclub%2Fhero.jpg?alt=media&token=91e98e3e-2cd8-446d-b983-8e17c04f8bb8",
-      "notes": "Act 2, Final Wishes, leaderboard, Next Stage, shop page 2.",
+      "notes": "Upper floors, penthouse secret ending, shop swap, Final Wishes free-spin nerf.",
       "launch": {
         "htmlMode": "",
         "kind": "exe",
