@@ -25,9 +25,9 @@
   },
   "games": [
     {
-      "downloadUrl": "https://github.com/scra976/bigdog-games/releases/download/ghostclub-v2.3.0/GhostClub-windows.zip",
+      "downloadUrl": "https://github.com/scra976/bigdog-games/releases/download/ghostclub-v2.3.1/GhostClub-windows.zip",
       "genre": "Casino",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "title": "Ghost Club",
       "released": "",
       "id": "ghostclub",
@@ -36,7 +36,7 @@
       "storagePath": "",
       "github": {
         "asset": "GhostClub-windows.zip",
-        "tag": "ghostclub-v2.3.0",
+        "tag": "ghostclub-v2.3.1",
         "repo": "bigdog-games",
         "useLatestRelease": true,
         "owner": "scra976"
